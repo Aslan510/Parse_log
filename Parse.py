@@ -36,6 +36,7 @@ def parseLogs(data):
 
                     data[date.month][date.day].append(logData) # append dictionary containing log data
 
+                    
                 else:
 
                     data[date.month][date.day] = [logData] 
@@ -85,3 +86,90 @@ url = "https://s3.amazonaws.com/tcmg476/http_access_log"
 fileName = "http.log"
 #setting up the dates        
 monthName = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'} # Maps month num (key) to name (value)
+
+def main():
+# generates a dictionary to fit the 12 months 
+    data = {x:{} for x in range(1,13)}  
+
+
+ # check if file exists
+    if not os.path.exists(fileName):  
+
+        print("No cached " + fileName + " found.\nDownloading from: " + url)
+# Saves file as http.log
+        getDataFile() 
+
+    else:
+
+        print("Using already downloaded file " + fileName + " file.")
+
+# parses data file, and sorts by month        
+
+    parseLogs(data) 
+
+    print("Events Per Day for each month:")
+
+    successCode = 0
+
+    ClientErrorCode = 0
+
+    ServerErrorCode = 0
+    
+    RedirectCode = 0
+    
+    TotalCodesPulled = 0
+
+    for monthNum, month in data.items(): # for each dictionary in data
+
+        print(monthName[monthNum] + ":" ) # prints name of month
+
+        for dayNum, logs in month.items(): # iterate through each day of logs
+
+            print("\t" + str(dayNum) + ": " + str(len(logs)) + " events.")
+
+            for log in logs: # iterate through each log dictionary contained in the logs list
+
+                logCode=log['code']
+
+                if 199<logCode<300:
+
+                    successCode+=1
+                if 299<logCode<400:
+                    
+                    RedirectCode+=1
+
+                if 399<logCode<500:
+
+                    ClientErrorCode+=1
+
+                if 499<logCode<600:
+
+                    ServerErrorCode+=1
+                    
+    total = (successCode + RedirectCode + ClientErrorCode + ServerErrorCode)
+
+    print("Successful requests: " + str(successCode))
+    
+    win = "{0:.0f}%".format((successCode/total * 100))
+    
+    print(win)
+
+    print("Unsuccessful requests: " + str(ClientErrorCode + ServerErrorCode))
+    
+    bad = (ClientErrorCode + ServerErrorCode)
+    
+    loss = "{0:.0f}%".format((bad/total * 100))
+    
+    print(loss)
+
+    print("Redirected Requests: " + str(RedirectCode))
+    
+    re = "{0:.0f}%".format((RedirectCode/total * 100))
+    
+    print (re)
+    
+    print ("Toal numbr of reguest: ", total)
+    
+if __name__ == "__main__":
+
+    main()
