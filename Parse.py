@@ -29,7 +29,7 @@ def Parse_Logs(data):
 
                 Date_Split = Split_Data[1].split('/') # splits up day/month/year string
 
-                date = Date_Time.date(int(Date_Split[2]), Month_Number[Date_Split[1]], int(Date_Split[0])) 
+                date = datetime.date(int(Date_Split[2]), Month_Number[Date_Split[1]], int(Date_Split[0])) 
 
                 Log_Data = {'date': date, 'name':Split_Data[2], 'code':int(Split_Data[3])} 
 
@@ -168,7 +168,7 @@ def main():
     
     print("\nThe most requested file was: " + Sorted_fileNames[-1][0] + " (accessed " + str(Sorted_fileNames[-1][1]) + " times)")
                     
-    print("The least requested file was: " + sorted_fileNames[0][0] + " (accessed " + str(Sorted_fileNames[0][1]) + " time / times)")    
+    print("The least requested file was: " + Sorted_fileNames[0][0] + " (accessed " + str(Sorted_fileNames[0][1]) + " time / times)")    
                     
     total = (Success_Code + Redirect_Code + Client_Error_Code + Server_Error_Code)
 
