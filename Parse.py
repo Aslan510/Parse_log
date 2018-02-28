@@ -15,13 +15,13 @@ def parseLogs(data):
 #Key and values set up for the matrix
         monthNum = {v: k for k, v in monthName.items()}  
 
-        currline = 0
+        current_line = 0
 # list of all failed parses
         badLog = [] 
-# iterate through file
+# goes through file
 
         for line in logFile: 
-            currline += 1 
+            current_line += 1 
 
             splitData = re.split('.*\[(.*?):.*\] \".* (.*) .*\" (\d{3})', line)
 
@@ -50,3 +50,46 @@ def parseLogs(data):
             else: 
 
                 badLog.append(splitData) 
+
+
+
+        print(str(len(badLog)) + " lines couldn't be parsed.")
+        
+# Downloads http log to "http.log"
+def getDataFile(): 
+# creates a lof file if there is not one already
+    with open(fileName, 'wb') as logFile: 
+# connect to server
+        with urlopen(url) as stream: 
+            
+            fileSize = stream.length
+
+    
+            print("Downloading \"%s\" (%s KB)..." % (fileName, fileSize / 1000))
+
+            currentFileSize = 0
+
+            blockSize = 8192
+
+            while True: 
+
+                buffer = stream.read(blockSize)
+
+                if not buffer: 
+
+                    break
+
+                currentFileSize += len(buffer) 
+
+                logFile.write(buffer)
+
+                status = r"%10d [%3.2f%%]" % (currentFileSize, currentFileSize*100. / fileSize) 
+
+                status = status + chr(8)*(len(status) + 1)
+
+
+
+                print(status, end="") 
+            
+
+            print("", end="\n") 
