@@ -6,75 +6,75 @@ import time
 
 
 
-def Parse_Logs(data):
+def parseLogs(data):
 #opens log file
-    with open(File_Name, 'r') as Log_File: 
+    with open(fileName, 'r') as logFile: 
 
-        print("Extracting Data ...")
+        print("Parsing Data ...")
 
 #Key and values set up for the matrix
-        Month_Number = {v: k for k, v in Month_Name.items()}  
+        monthNum = {v: k for k, v in monthName.items()}  
 
         current_line = 0
 # list of all failed parses
-        Failed_Log = [] 
+        FailedLog = [] 
 # goes through file
 
-        for line in Log_File: 
+        for line in logFile: 
             current_line += 1 
 
-            Split_Data = re.split('.*\[(.*?):.*\] \".* (.*) .*\" (\d{3})', line)
+            splitData = re.split('.*\[(.*?):.*\] \".* (.*) .*\" (\d{3})', line)
 
-            if len(Split_Data) == 5: 
+            if len(splitData) == 5: 
 
-                Date_Split = Split_Data[1].split('/') # splits up day/month/year string
+                dateSplit = splitData[1].split('/') # splits up day/month/year string
 
-                date = datetime.date(int(Date_Split[2]), Month_Number[Date_Split[1]], int(Date_Split[0])) 
+                date = datetime.date(int(dateSplit[2]), monthNum[dateSplit[1]], int(dateSplit[0])) 
 
-                Log_Data = {'date': date, 'name':Split_Data[2], 'code':int(Split_Data[3])} 
+                logData = {'date': date, 'name':splitData[2], 'code':int(splitData[3])} 
 
                 if date.day in data[date.month]: 
 
-                    data[date.month][date.day].append(Log_Data)
+                    data[date.month][date.day].append(logData) # append dictionary containing log data
 
                     
                 else:
 
-                    data[date.month][date.day] = [Log_Data] 
+                    data[date.month][date.day] = [logData] 
             else: 
 
-                Failed_Log.append(Split_Data) 
+                FailedLog.append(splitData) 
                 
-        print(str(len(Failed_Log)) + " lines couldn't be parsed.")
+        print(str(len(FailedLog)) + " lines couldn't be parsed.")
         
 # Downloads http log to "http.log"
-def Get_Data_File(): 
+def getDataFile(): 
 # creates a lof file if there is not one already
-    with open(File_Name, 'wb') as Log_File: 
+    with open(fileName, 'wb') as logFile: 
 # connect to server
         with urlopen(url) as stream: 
             
-            File_Size = stream.length
+            fileSize = stream.length
 
-            print("Downloading \"%s\" (%s KB)...\n" % (File_Name, File_Size / 1000))
+            print("Downloading \"%s\" (%s KB)...\n" % (fileName, fileSize / 1000))
 
-            Current_File_Size = 0
+            currentFileSize = 0
 
-            Block_Size = 8192
+            blockSize = 8192
 
             while True: 
 
-                buffer = stream.read(Block_Size)
+                buffer = stream.read(blockSize)
 
                 if not buffer: 
 
                     break
 
-                Current_File_Size += len(buffer) 
+                currentFileSize += len(buffer) 
 
-                Log_File.write(buffer)
+                logFile.write(buffer)
 
-                status = r"%10d [%3.2f%%]" % (Current_File_Size, Current_File_Size*100. / File_Size) 
+                status = r"%10d [%3.2f%%]" % (currentFileSize, currentFileSize*100. / fileSize) 
 
                 status = status + chr(8)*(len(status) + 1)
 
@@ -84,13 +84,13 @@ def Get_Data_File():
 #url address to pull the log file        
 url = "https://s3.amazonaws.com/tcmg476/http_access_log"
 #naming the file        
-File_Name = "http.log"
+fileName = "http.log"
 #setting up the dates        
-Month_Name = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'} # Maps month num (key) to name (value)
+monthName = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'} # Maps month num (key) to name (value)
 
-def Count_Events(month):
+def countEvents(month):
     sum = 0
-    for Day_Num, logs in month.items():
+    for dayNum, logs in month.items():
         sum += len(logs)
     return sum
 def main():
@@ -99,96 +99,96 @@ def main():
 
 
  # check if file exists
-    if not os.path.exists(File_Name):  
+    if not os.path.exists(fileName):  
 
-        print("Your file was not previously downloaded. " + File_Name + " found.\nDownloading your file from: " + url)
+        print("Your file was not previously downloaded. " + fileName + " found.\nDownloading your file from: " + url)
 
-        Get_Data_File() 
+        getDataFile() 
 
     else:
 
-        print("Congrats you already have the file downloaded. " + File_Name + " Let's get started.")
+        print("Congrats you already have the file downloaded. " + fileName + " Let's get started.")
 
 # parses data file, and sorts by month        
 
-    Parse_Logs(data) 
+    parseLogs(data) 
     
     #print("Lines per month")
 
     #print("Lines Per Day for each month:")
 
-    Success_Code = 0
+    successCode = 0
 
-    Client_Error_Code = 0
+    ClientErrorCode = 0
 
-    Server_Error_Code = 0
+    ServerErrorCode = 0
     
-    Redirect_Code = 0
+    RedirectCode = 0
     
-    Total_Codes_Pulled = 0
+    TotalCodesPulled = 0
  #blank file name log   
-    File_Names = {}
+    fileNames = {}
 
-    for Month_Num, month in data.items(): 
+    for monthNum, month in data.items(): 
 #prints the totals for the given month 
-        print(Month_Name[Month_Num] + ": " +str(Count_Events(month)) + " Lines for this month")
+        print(monthName[monthNum] + ": " +str(countEvents(month)) + " Lines for this month")
 #prints the totals for each day of the month
-        for Day_Num, logs in month.items():
+        for dayNum, logs in month.items():
 
-            print("\t" + str(Day_Num) + ": " + str(len(logs)) + " Lines.")
+            print("\t" + str(dayNum) + ": " + str(len(logs)) + " Lines.")
 
             for log in logs: 
 
-                HTTP_Code=log['code']
+                HTTPCode=log['code']
 
-                if 199<HTTP_Code<300:
+                if 199<HTTPCode<300:
 
-                    Success_Code+=1
+                    successCode+=1
                     
-                if 299<HTTP_Code<400:
+                if 299<HTTPCode<400:
                     
-                    Redirect_Code+=1
+                    RedirectCode+=1
 
-                if 399<HTTP_Code<500:
+                if 399<HTTPCode<500:
 
-                    Client_Error_Code+=1
+                    ClientErrorCode+=1
 
-                if 499<HTTP_Code<600:
+                if 499<HTTPCode<600:
 
-                    Server_Error_Code+=1
+                    ServerErrorCode+=1
                     
                                     
  #count the different types of filenames being accessed                   
-                if log["name"] in File_Names:
-                    File_Names[log["name"]] += 1
+                if log["name"] in fileNames:
+                    fileNames[log["name"]] += 1
                 else:
-                    File_Names[log["name"]] = 1   
+                    fileNames[log["name"]] = 1   
  #sort the log for the file names                   
-    Sorted_fileNames = sorted(File_Names.items(), key=lambda x: x[1])
+    sorted_fileNames = sorted(fileNames.items(), key=lambda x: x[1])
     
-    print("\nThe most requested file was: " + Sorted_fileNames[-1][0] + " (accessed " + str(Sorted_fileNames[-1][1]) + " times)")
+    print("\nThe most requested file was: " + sorted_fileNames[-1][0] + " (accessed " + str(sorted_fileNames[-1][1]) + " times)")
                     
-    print("The least requested file was: " + Sorted_fileNames[0][0] + " (accessed " + str(Sorted_fileNames[0][1]) + " time / times)")    
+    print("The least requested file was: " + sorted_fileNames[0][0] + " (accessed " + str(sorted_fileNames[0][1]) + " time / times)")    
                     
-    total = (Success_Code + Redirect_Code + Client_Error_Code + Server_Error_Code)
+    total = (successCode + RedirectCode + ClientErrorCode + ServerErrorCode)
 
-    print("Successful requests: " + str(Success_Code))
+    print("Successful requests: " + str(successCode))
     
-    win = "{0:.0f}%".format((Success_Code/total * 100))
+    win = "{0:.0f}%".format((successCode/total * 100))
     
     print(win)
 
-    print("Unsuccessful requests: " + str(Client_Error_Code + Server_Error_Code))
+    print("Unsuccessful requests: " + str(ClientErrorCode + ServerErrorCode))
     
-    Failed = (Client_Error_Code + Server_Error_Code)
+    Failed = (ClientErrorCode + ServerErrorCode)
     
     loss = "{0:.0f}%".format((Failed/total * 100))
     
     print(loss)
 
-    print("Redirected Requests: " + str(Redirect_Code))
+    print("Redirected Requests: " + str(RedirectCode))
     
-    re = "{0:.0f}%".format((Redirect_Code/total * 100))
+    re = "{0:.0f}%".format((RedirectCode/total * 100))
     
     print (re)
     
